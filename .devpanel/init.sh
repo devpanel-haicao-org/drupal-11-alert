@@ -80,7 +80,7 @@ else
     fi
 
     case "$CURRENT_ENV" in
-        "local" | "docksal" | "dev")) BASE_PROXY_URL="https://drupal-forge.docksal.site:8444" ;;
+        "local" | "docksal" | "dev") BASE_PROXY_URL="https://drupal-forge.docksal.site:8444" ;;
         # "dev") BASE_PROXY_URL="https://dev.drupalforge.org" ;;
         "stage" | "staging") BASE_PROXY_URL="https://stage.drupalforge.org" ;;
         "prod" | "production" | "www") BASE_PROXY_URL="https://www.drupalforge.org" ;;
