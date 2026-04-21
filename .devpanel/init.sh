@@ -106,6 +106,8 @@ fi
 # 2. Tạo file tĩnh chứa Data cho Alert Bar
 if [ -d "web" ]; then
   BUY_LINK_URL="${BASE_PROXY_URL}/app/purchase/${CURRENT_APP_ID}"
+  SAFE_APP_NAME="My Application"
+  SAFE_SUB_ID="Standard"
 
   jq -n \
     --arg app "$SAFE_APP_NAME" \
