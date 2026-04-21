@@ -70,7 +70,7 @@ CURRENT_APP_ID="${DP_APP_ID:-}"
 if [ -z "$CURRENT_APP_ID" ]; then
     echo "⚠️ Không tìm thấy DP_APP_ID. Dùng dữ liệu mặc định."
     export RAW_API_JSON=""
-    export BASE_PLATFORM_URL="";
+    export BASE_PLATFORM_URL=""
     export BUY_LINK_URL="https://www.devpanel.com/pricing/"
 else
     # Tự động nhận diện môi trường từ Hostname
@@ -91,7 +91,7 @@ else
     DRUPALFORGE_PROXY="${BASE_PROXY_URL}/api/internal/alert-app-info?app_id=${CURRENT_APP_ID}"
     
     # Lấy dữ liệu JSON từ API (export để đẩy sang cho PHP xử lý)
-    export BASE_PLATFORM_URL="${BASE_PROXY_URL}/app/purchase/";
+    export BASE_PLATFORM_URL="${BASE_PROXY_URL}/app/purchase/"
     export RAW_API_JSON=$(curl -s -f -X GET "$DRUPALFORGE_PROXY" || true)
     export BUY_LINK_URL="${BASE_PROXY_URL}/app/purchase/${CURRENT_APP_ID}"
 fi
@@ -111,9 +111,9 @@ php -r '
 
     $safe_data = [
         "appName" => $api_data["appName"] ?? "My Application",
-        "submissionId" => $submissionId,
-        "templateId" => $templateId,
-        "buyLink" => $buy_link . $submissionId . "/" . $templateId;
+        "subId" => $submissionId,
+        "email" => $api_data["email"] ?? "",
+        "buyLink" => $buy_link . $submissionId . "/" . $templateId,
     ];
     
     // Ghi ra file JSON chuẩn mực (chống lỗi syntax mọi ký tự đặc biệt)
