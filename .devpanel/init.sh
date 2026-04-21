@@ -70,6 +70,7 @@ CURRENT_APP_ID="${DP_APP_ID:-}"
 if [ -z "$CURRENT_APP_ID" ]; then
     echo "⚠️ Không tìm thấy DP_APP_ID. Dùng dữ liệu mặc định."
     export RAW_API_JSON=""
+    export BASE_PLATFORM_URL="";
     export BUY_LINK_URL="https://www.devpanel.com/pricing/"
 else
     # Tự động nhận diện môi trường từ Hostname
@@ -90,6 +91,7 @@ else
     DRUPALFORGE_PROXY="${BASE_PROXY_URL}/api/internal/alert-app-info?app_id=${CURRENT_APP_ID}"
     
     # Lấy dữ liệu JSON từ API (export để đẩy sang cho PHP xử lý)
+    export BASE_PLATFORM_URL="${BASE_PROXY_URL}/app/purchase/";
     export RAW_API_JSON=$(curl -s -f -X GET "$DRUPALFORGE_PROXY" || true)
     export BUY_LINK_URL="${BASE_PROXY_URL}/app/purchase/${CURRENT_APP_ID}"
 fi
@@ -98,16 +100,20 @@ fi
 php -r '
     // Đọc biến môi trường do Bash truyền vào
     $raw_json = getenv("RAW_API_JSON");
-    $buy_link = getenv("BUY_LINK_URL");
+    $buy_link = getenv("BASE_PLATFORM_URL");
     
     // Parse JSON từ API (nếu API lỗi, sẽ trả về mảng rỗng)
     $api_data = json_decode($raw_json, true) ?:[];
     
     // Chuẩn bị dữ liệu an toàn
+    $submissionId = $api_data["submissionId"] ?? "submissionId";
+    $templateId = $api_data["templateId"] ?? "templateId";
+
     $safe_data = [
         "appName" => $api_data["appName"] ?? "My Application",
-        "planName" => $api_data["planName"] ?? "Standard",
-        "buyLink" => $buy_link
+        "submissionId" => $submissionId,
+        "templateId" => $templateId,
+        "buyLink" => $buy_link . $submissionId . "/" . $templateId;
     ];
     
     // Ghi ra file JSON chuẩn mực (chống lỗi syntax mọi ký tự đặc biệt)
@@ -122,7 +128,7 @@ if [ -f "web/index.php" ]; then
   # Kiểm tra xem file index.php đã có chuỗi alert-bar.php chưa để tránh chèn đè 2 lần 
   # (phòng trường hợp người dùng chạy init.sh nhiều lần)
   if ! grep -q "alert-bar.php" web/index.php; then
-    sed -i 's/<?php/<?php\ninclude_once __DIR__ . "\/..\/alert-bar.php";\n/g' web/index.php
+    sed -i 's/<?php/<?php\ninclude_once __DIR__ . "\/..\/.devpanel\/alert-bar.php";\n/g' web/index.php
     echo "✅ Đã gắn thanh Alert Bar vào index.php thành công!"
   else
     echo "✅ Thanh Alert Bar đã được nhúng từ trước."

@@ -24,7 +24,7 @@ if (!headers_sent() && php_sapi_name() !== 'cli') {
         
         $alert_html = '
         <style>
-            body { padding-top: 60px !important; }
+            body { padding-top: 68px !important; }
             #universal-alert-bar { position: fixed; top: 0; left: 0; width: 100%; height: 68px; background: #000; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 7px 40px; box-sizing: border-box; z-index: 2147483647; font-family: Arial, sans-serif; }
             #universal-alert-bar .devpanel-logo { width: 150px; height: auto; }
             #universal-alert-bar .devpanel-logo img { object-fit: contain; width: 100%; }
