@@ -18,6 +18,7 @@ if (!headers_sent() && php_sapi_name() !== 'cli') {
             if ($parsed_data) {
                 $app_name = $parsed_data['appName'] ?? $app_name;
                 $sub_id = $parsed_data['subId'] ?? $plan_name;
+                $email = $parsed_data['email'] ?? '';
                 $buy_link = $parsed_data['buyLink'] ?? $buy_link;
             }
         }
@@ -36,7 +37,7 @@ if (!headers_sent() && php_sapi_name() !== 'cli') {
             
             <!-- Hiển thị thông tin vào div.devpanel-app-info theo đúng format bạn muốn -->
             <div class="devpanel-app-info">
-                App: <strong>' . htmlspecialchars($app_name) . '</strong> | SubmissionID: ' . htmlspecialchars($sub_id) . '
+                App: <strong>' . htmlspecialchars($app_name) . '</strong> | SubmissionID: ' . htmlspecialchars($sub_id) . ' | Email: ' . htmlspecialchars($email) . '
             </div>
             
             <a href="' . htmlspecialchars($buy_link) . '" class="buy-btn" target="_blank">Buy Now</a>
