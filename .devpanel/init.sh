@@ -80,7 +80,7 @@ else
     fi
 
     case "$CURRENT_ENV" in
-        "local" | "docksal" | "dev") BASE_PROXY_URL="http://drupal-forge.docksal.site" ;;
+        "local" | "docksal" | "dev") BASE_PROXY_URL="https://drupal-forge.docksal.site:8444" ;;
         # "dev") BASE_PROXY_URL="https://dev.drupalforge.org" ;;
         "stage" | "staging") BASE_PROXY_URL="https://stage.drupalforge.org" ;;
         "prod" | "production" | "www") BASE_PROXY_URL="https://www.drupalforge.org" ;;
@@ -90,17 +90,17 @@ else
     DRUPALFORGE_PROXY="${BASE_PROXY_URL}/api/internal/alert-app-info?app_id=${CURRENT_APP_ID}"
     
     # Dùng '|| true' để ngăn cản set -e làm sập script nếu curl bị lỗi mạng
-    SAFE_JSON=$(curl -s -f -X GET "$DRUPALFORGE_PROXY" || true)
+    # SAFE_JSON=$(curl -s -f -X GET "$DRUPALFORGE_PROXY" || true)
     
-    if[ -n "$SAFE_JSON" ]; then
-        # Dùng '|| echo' để tránh jq lỗi phá vỡ bash script
-        SAFE_APP_NAME=$(echo "$SAFE_JSON" | jq -r '.appName // "My Application"' 2>/dev/null || echo "My Application")
-        SAFE_SUB_ID=$(echo "$SAFE_JSON" | jq -r '.submissionId // "Standard"' 2>/dev/null || echo "Standard")
-    else
-        echo "❌ Lỗi kết nối tới DrupalForge Proxy. Dùng dữ liệu mặc định."
-        SAFE_APP_NAME="My Application"
-        SAFE_SUB_ID="Standard"
-    fi
+    # if[ -n "$SAFE_JSON" ]; then
+    #     # Dùng '|| echo' để tránh jq lỗi phá vỡ bash script
+    #     SAFE_APP_NAME=$(echo "$SAFE_JSON" | jq -r '.appName // "My Application"' 2>/dev/null || echo "My Application")
+    #     SAFE_SUB_ID=$(echo "$SAFE_JSON" | jq -r '.submissionId // "Standard"' 2>/dev/null || echo "Standard")
+    # else
+    #     echo "❌ Lỗi kết nối tới DrupalForge Proxy. Dùng dữ liệu mặc định."
+    #     SAFE_APP_NAME="My Application"
+    #     SAFE_SUB_ID="Standard"
+    # fi
 fi
 
 # 2. Tạo file tĩnh chứa Data cho Alert Bar
