@@ -69,8 +69,8 @@ echo 'Configuring DevPanel Alert Bar...'
 CURRENT_APP_ID="${DP_APP_ID:-}"
 if [ -z "$CURRENT_APP_ID" ]; then
     echo "⚠️ Không tìm thấy DP_APP_ID. Dùng dữ liệu mặc định."
-    SAFE_APP_NAME="My Application"
-    SAFE_SUB_ID="Standard"
+    export RAW_API_JSON=""
+    export BUY_LINK_URL="https://www.devpanel.com/pricing/"
 else
     # Tự động nhận diện môi trường từ Hostname
     if [ -n "${DP_HOSTNAME:-}" ]; then
@@ -80,7 +80,7 @@ else
     fi
 
     case "$CURRENT_ENV" in
-        "local" | "docksal" | "dev") BASE_PROXY_URL="https://drupal-forge.docksal.site:8444" ;;
+        "local" | "docksal" | "dev")) BASE_PROXY_URL="https://drupal-forge.docksal.site:8444" ;;
         # "dev") BASE_PROXY_URL="https://dev.drupalforge.org" ;;
         "stage" | "staging") BASE_PROXY_URL="https://stage.drupalforge.org" ;;
         "prod" | "production" | "www") BASE_PROXY_URL="https://www.drupalforge.org" ;;
@@ -89,37 +89,35 @@ else
 
     DRUPALFORGE_PROXY="${BASE_PROXY_URL}/api/internal/alert-app-info?app_id=${CURRENT_APP_ID}"
     
-    # Dùng '|| true' để ngăn cản set -e làm sập script nếu curl bị lỗi mạng
-    # SAFE_JSON=$(curl -s -f -X GET "$DRUPALFORGE_PROXY" || true)
+    # Lấy dữ liệu JSON từ API (export để đẩy sang cho PHP xử lý)
+    export RAW_API_JSON=$(curl -s -f -X GET "$DRUPALFORGE_PROXY" || true)
+    export BUY_LINK_URL="${BASE_PROXY_URL}/app/purchase/${CURRENT_APP_ID}"
+fi
+
+# 2. Dùng PHP CLI để xử lý Data và sinh ra file alert-bar-data.json an toàn
+php -r '
+    // Đọc biến môi trường do Bash truyền vào
+    $raw_json = getenv("RAW_API_JSON");
+    $buy_link = getenv("BUY_LINK_URL");
     
-    # if[ -n "$SAFE_JSON" ]; then
-    #     # Dùng '|| echo' để tránh jq lỗi phá vỡ bash script
-    #     SAFE_APP_NAME=$(echo "$SAFE_JSON" | jq -r '.appName // "My Application"' 2>/dev/null || echo "My Application")
-    #     SAFE_SUB_ID=$(echo "$SAFE_JSON" | jq -r '.submissionId // "Standard"' 2>/dev/null || echo "Standard")
-    # else
-    #     echo "❌ Lỗi kết nối tới DrupalForge Proxy. Dùng dữ liệu mặc định."
-    #     SAFE_APP_NAME="My Application"
-    #     SAFE_SUB_ID="Standard"
-    # fi
-fi
+    // Parse JSON từ API (nếu API lỗi, sẽ trả về mảng rỗng)
+    $api_data = json_decode($raw_json, true) ?:[];
+    
+    // Chuẩn bị dữ liệu an toàn
+    $safe_data = [
+        "appName" => $api_data["appName"] ?? "My Application",
+        "planName" => $api_data["planName"] ?? "Standard",
+        "buyLink" => $buy_link
+    ];
+    
+    // Ghi ra file JSON chuẩn mực (chống lỗi syntax mọi ký tự đặc biệt)
+    $json_output = json_encode($safe_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    file_put_contents("alert-bar-data.json", $json_output);
+'
 
-# 2. Tạo file tĩnh chứa Data cho Alert Bar
-if [ -d "web" ]; then
-  BUY_LINK_URL="${BASE_PROXY_URL}/app/purchase/${CURRENT_APP_ID}"
-  SAFE_APP_NAME="My Application"
-  SAFE_SUB_ID="Standard"
-
-  jq -n \
-    --arg app "$SAFE_APP_NAME" \
-    --arg subid "$SAFE_SUB_ID" \
-    --arg link "$BUY_LINK_URL" \
-    '{appName: $app, subId: $subid, buyLink: $link}' > alert-bar-data.json
-
-  echo "✅ Ghi dữ liệu JSON (alert-bar-data.json) thành công!"
-fi
+echo "✅ Ghi dữ liệu JSON (alert-bar-data.json) bằng PHP thành công!"
 
 # 3. Tiêm code nhúng alert-bar.php vào index.php
-# Chú ý: Đã sửa lỗi syntax khoảng trắng (if [ -f...) của bạn
 if [ -f "web/index.php" ]; then
   # Kiểm tra xem file index.php đã có chuỗi alert-bar.php chưa để tránh chèn đè 2 lần 
   # (phòng trường hợp người dùng chạy init.sh nhiều lần)
