@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# Lấy đường dẫn thư mục hiện tại của module
 export MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_ROOT_DIR="$(cd "$MODULE_DIR/../../../" && pwd)"
 
@@ -38,7 +37,6 @@ else
     export BUY_LINK_URL="${BASE_PROXY_URL}/app/purchase/${CURRENT_APP_ID}"
 fi
 
-# 2. Generate data.json vào trong thư mục của module
 php -r '
     $raw_json = getenv("RAW_API_JSON");
     $buy_link = getenv("BASE_PLATFORM_URL");
@@ -49,16 +47,17 @@ php -r '
     $submissionId = $api_data["submissionId"] ?? "submissionId";
     $templateId = $api_data["templateId"] ?? "templateId";
 
-    $safe_data = [
+    $showBuyNow = isset($api_data["showBuyNow"]) ? (bool) $api_data["showBuyNow"] : false;
+
+    $safe_data =[
         "appName" => $api_data["appName"] ?? "My Application",
         "subId" => $submissionId,
         "email" => $api_data["email"] ?? "",
         "buyLink" => $buy_link . $submissionId . "/" . $templateId,
+        "showBuyNow" => $showBuyNow
     ];
     
     $json_output = json_encode($safe_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    
-    // Ghi file JSON trực tiếp vào thư mục chứa script này
     file_put_contents($module_dir . "/data.json", $json_output);
 '
 
