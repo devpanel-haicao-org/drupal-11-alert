@@ -63,8 +63,7 @@ fi
 # SET UP ALERT BAR (DYNAMIC DATA FETCHING & INJECTION)
 # ==============================================================================
 echo
-time source .devpanel/modules/alert-bar/setup.sh
-echo
+bash .devpanel/modules/alert-bar/setup.sh
 # ==============================================================================
 
 #== Warm up caches.
