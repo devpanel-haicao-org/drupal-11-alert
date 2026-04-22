@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 # Lấy đường dẫn thư mục hiện tại của module
-MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_ROOT_DIR="$(cd "$MODULE_DIR/../../../" && pwd)"
 
 echo "Configuring DevPanel Alert Bar (Module)..."
 
 # 1. Fetch Dynamic Data from DrupalForge Proxy.
 CURRENT_APP_ID="${DP_APP_ID:-}"
-if[ -z "$CURRENT_APP_ID" ]; then
+if [ -z "$CURRENT_APP_ID" ]; then
     echo "Not Yet DP_APP_ID."
     export RAW_API_JSON=""
     export BASE_PLATFORM_URL=""
@@ -42,6 +42,7 @@ fi
 php -r '
     $raw_json = getenv("RAW_API_JSON");
     $buy_link = getenv("BASE_PLATFORM_URL");
+    $module_dir = getenv("MODULE_DIR");
     
     $api_data = json_decode($raw_json, true) ?:[];
     
@@ -58,7 +59,7 @@ php -r '
     $json_output = json_encode($safe_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     
     // Ghi file JSON trực tiếp vào thư mục chứa script này
-    file_put_contents("'${MODULE_DIR}'/data.json", $json_output);
+    file_put_contents($module_dir . "/data.json", $json_output);
 '
 
 echo "Generate JSON Data successful."
