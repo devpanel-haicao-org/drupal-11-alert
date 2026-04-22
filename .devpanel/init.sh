@@ -118,8 +118,7 @@ php -r '
     
     // Ghi ra file JSON chuẩn mực (chống lỗi syntax mọi ký tự đặc biệt)
     $json_output = json_encode($safe_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    file_put_contents("alert-bar-data.json", $json_output);
-'
+' > .devpanel/alert-bar-data.json
 
 echo "✅ Ghi dữ liệu JSON (alert-bar-data.json) bằng PHP thành công!"
 
@@ -128,7 +127,7 @@ if [ -f "web/index.php" ]; then
   # Kiểm tra xem file index.php đã có chuỗi alert-bar.php chưa để tránh chèn đè 2 lần 
   # (phòng trường hợp người dùng chạy init.sh nhiều lần)
   if ! grep -q "alert-bar.php" web/index.php; then
-    sed -i 's/<?php/<?php\ninclude_once __DIR__ . "\/..\/.devpanel\/alert-bar.php";\n/g' web/index.php
+    sed -i 's|<?php|<?php\ninclude_once __DIR__ . "/../.devpanel/alert-bar.php";\n|g' web/index.php
     echo "✅ Đã gắn thanh Alert Bar vào index.php thành công!"
   else
     echo "✅ Thanh Alert Bar đã được nhúng từ trước."
