@@ -118,7 +118,8 @@ php -r '
     
     // Ghi ra file JSON chuẩn mực (chống lỗi syntax mọi ký tự đặc biệt)
     $json_output = json_encode($safe_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-' > .devpanel/alert-bar-data.json
+    file_put_contents(".devpanel/alert-bar-data.json", $json_output);
+'
 
 echo "✅ Ghi dữ liệu JSON (alert-bar-data.json) bằng PHP thành công!"
 
