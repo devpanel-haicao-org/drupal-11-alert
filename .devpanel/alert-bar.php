@@ -6,7 +6,6 @@ if (!headers_sent() && php_sapi_name() !== 'cli') {
         
         // 1. Khai báo dữ liệu mặc định (đề phòng file lỗi hoặc chưa có)
         $app_name = "My Application";
-        $plan_name = "Standard";
         $buy_link = "https://www.devpanel.com/pricing/";
 
         // 2. Đọc dữ liệu từ file JSON
@@ -17,7 +16,7 @@ if (!headers_sent() && php_sapi_name() !== 'cli') {
             
             if ($parsed_data) {
                 $app_name = $parsed_data['appName'] ?? $app_name;
-                $sub_id = $parsed_data['subId'] ?? $plan_name;
+                $sub_id = $parsed_data['subId'] ?? '';
                 $email = $parsed_data['email'] ?? '';
                 $buy_link = $parsed_data['buyLink'] ?? $buy_link;
             }
