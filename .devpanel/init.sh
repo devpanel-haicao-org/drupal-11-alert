@@ -65,7 +65,7 @@ fi
 echo
 echo 'Configuring DevPanel Alert Bar...'
 
-# 1. Fetch Dynamic Data from DrupalForge Proxy
+# 1. Fetch Dynamic Data from DrupalForge Proxy.
 CURRENT_APP_ID="${DP_APP_ID:-}"
 if [ -z "$CURRENT_APP_ID" ]; then
     echo "⚠️ Không tìm thấy DP_APP_ID. Dùng dữ liệu mặc định."
@@ -73,7 +73,7 @@ if [ -z "$CURRENT_APP_ID" ]; then
     export BASE_PLATFORM_URL=""
     export BUY_LINK_URL="https://www.devpanel.com/pricing/"
 else
-    # Tự động nhận diện môi trường từ Hostname
+    # Get Hostname automatic.
     if [ -n "${DP_HOSTNAME:-}" ]; then
         CURRENT_ENV=$(echo "$DP_HOSTNAME" | cut -d'-' -f1)
     else
@@ -90,22 +90,20 @@ else
 
     DRUPALFORGE_PROXY="${BASE_PROXY_URL}/api/internal/alert-app-info?app_id=${CURRENT_APP_ID}"
     
-    # Lấy dữ liệu JSON từ API (export để đẩy sang cho PHP xử lý)
+    # Get JSON data from API.
     export BASE_PLATFORM_URL="${BASE_PROXY_URL}/app/purchase/"
-    export RAW_API_JSON=$(curl -s -f -X GET "$DRUPALFORGE_PROXY" || true)
+    export RAW_API_JSON=$(curl -s -f -X GET "$DRUPALFORGE_PROXY" \
+      -H "X-DrupalForge-Auth: DF-Alert-v1-8x92nd81bs" || true)
     export BUY_LINK_URL="${BASE_PROXY_URL}/app/purchase/${CURRENT_APP_ID}"
 fi
 
-# 2. Dùng PHP CLI để xử lý Data và sinh ra file alert-bar-data.json an toàn
+# 2. Generate alert-bar-data.json.
 php -r '
-    // Đọc biến môi trường do Bash truyền vào
     $raw_json = getenv("RAW_API_JSON");
     $buy_link = getenv("BASE_PLATFORM_URL");
     
-    // Parse JSON từ API (nếu API lỗi, sẽ trả về mảng rỗng)
     $api_data = json_decode($raw_json, true) ?:[];
     
-    // Chuẩn bị dữ liệu an toàn
     $submissionId = $api_data["submissionId"] ?? "submissionId";
     $templateId = $api_data["templateId"] ?? "templateId";
 
@@ -116,22 +114,19 @@ php -r '
         "buyLink" => $buy_link . $submissionId . "/" . $templateId,
     ];
     
-    // Ghi ra file JSON chuẩn mực (chống lỗi syntax mọi ký tự đặc biệt)
     $json_output = json_encode($safe_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     file_put_contents(".devpanel/alert-bar-data.json", $json_output);
 '
 
-echo "✅ Ghi dữ liệu JSON (alert-bar-data.json) bằng PHP thành công!"
+echo "Generate JSON Data successful."
 
-# 3. Tiêm code nhúng alert-bar.php vào index.php
+# 3. Include alert-bar.php to index.php file.
 if [ -f "web/index.php" ]; then
-  # Kiểm tra xem file index.php đã có chuỗi alert-bar.php chưa để tránh chèn đè 2 lần 
-  # (phòng trường hợp người dùng chạy init.sh nhiều lần)
   if ! grep -q "alert-bar.php" web/index.php; then
     sed -i 's|<?php|<?php\ninclude_once __DIR__ . "/../.devpanel/alert-bar.php";\n|g' web/index.php
-    echo "✅ Đã gắn thanh Alert Bar vào index.php thành công!"
+    echo "Included Alert Bar to index.php"
   else
-    echo "✅ Thanh Alert Bar đã được nhúng từ trước."
+    echo "Alert bar already existed."
   fi
 fi
 # ==============================================================================
