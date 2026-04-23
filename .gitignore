@@ -1,4 +1,5 @@
 /.devpanel/dumps/
+/.devpanel/modules/alert-bar/data.json
 /.editorconfig
 /.gitattributes
 /.vscode/
