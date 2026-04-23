@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# PATH of module
 export MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_ROOT_DIR="$(cd "$MODULE_DIR/../../../" && pwd)"
 
@@ -37,6 +38,7 @@ else
     export BUY_LINK_URL="${BASE_PROXY_URL}/app/purchase/${CURRENT_APP_ID}"
 fi
 
+# 2. Generate data.json
 php -r '
     $raw_json = getenv("RAW_API_JSON");
     $buy_link = getenv("BASE_PLATFORM_URL");
@@ -46,7 +48,6 @@ php -r '
     
     $submissionId = $api_data["submissionId"] ?? "submissionId";
     $templateId = $api_data["templateId"] ?? "templateId";
-
     $showBuyNow = isset($api_data["showBuyNow"]) ? (bool) $api_data["showBuyNow"] : false;
 
     $safe_data =[
@@ -63,13 +64,32 @@ php -r '
 
 echo "Generate JSON Data successful."
 
-# 3. Include alert-bar.php to index.php file.
-INDEX_FILE="$APP_ROOT_DIR/web/index.php"
-if [ -f "$INDEX_FILE" ]; then
+# ==============================================================================
+# 3. Include alert-bar.php to index.php file (DYNAMIC PATH COMPUTATION)
+# ==============================================================================
+# Get WEB_ROOT
+CURRENT_WEB_ROOT="${WEB_ROOT:-$APP_ROOT_DIR/web}"
+INDEX_FILE="$CURRENT_WEB_ROOT/index.php"
+
+if[ -f "$INDEX_FILE" ]; then
   if ! grep -q "alert-bar.php" "$INDEX_FILE"; then
-    sed -i "s|<?php|<?php\ninclude_once __DIR__ . \"/../.devpanel/modules/alert-bar/alert-bar.php\";\n|g" "$INDEX_FILE"
-    echo "Included Alert Bar to index.php"
+    
+    # Relative path from WEB_ROOT to MODULE_DIR
+    REL_PATH=$(realpath --relative-to="$CURRENT_WEB_ROOT" "$MODULE_DIR" 2>/dev/null || echo "")
+    
+    if[ -n "$REL_PATH" ]; then
+        INCLUDE_CODE="include_once __DIR__ . '/${REL_PATH}/alert-bar.php';"
+    else
+        # Fallback absolute path if the system not yet realpath
+        INCLUDE_CODE="include_once '${MODULE_DIR}/alert-bar.php';"
+    fi
+
+    # Include alert-bar.php to index.php
+    sed -i "s|<?php|<?php\n${INCLUDE_CODE}\n|g" "$INDEX_FILE"
+    echo "Included Alert Bar to index.php (Path: $INCLUDE_CODE)"
   else
     echo "Alert bar already existed."
   fi
+else
+  echo "Can not find index.php file in $INDEX_FILE"
 fi
