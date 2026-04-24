@@ -13,6 +13,18 @@ body {
     margin-top: var(--dp-height) !important;
 }
 
+/* Only Wordpress */
+body:has(#dp-alert-wrapper) #wpadminbar {
+    top: var(--dp-height) !important;
+}
+/* End */
+
+/* Only Drupal */
+body:has(#dp-alert-wrapper) #toolbar-bar {
+    top: var(--dp-height) !important;
+}
+/* End */
+
 #dp-alert-wrapper {
     position: fixed; top: 0; left: 0; width: 100%;
     z-index: 2147483647;
