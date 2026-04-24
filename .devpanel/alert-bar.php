@@ -6,7 +6,6 @@ if (!headers_sent() && php_sapi_name() !== 'cli') {
         
         // 1. Khai báo dữ liệu mặc định (đề phòng file lỗi hoặc chưa có)
         $app_name = "My Application";
-        $plan_name = "Standard";
         $buy_link = "https://www.devpanel.com/pricing/";
 
         // 2. Đọc dữ liệu từ file JSON
@@ -17,14 +16,15 @@ if (!headers_sent() && php_sapi_name() !== 'cli') {
             
             if ($parsed_data) {
                 $app_name = $parsed_data['appName'] ?? $app_name;
-                $sub_id = $parsed_data['subId'] ?? $plan_name;
+                $sub_id = $parsed_data['subId'] ?? '';
+                $email = $parsed_data['email'] ?? '';
                 $buy_link = $parsed_data['buyLink'] ?? $buy_link;
             }
         }
         
         $alert_html = '
         <style>
-            body { padding-top: 60px !important; }
+            body { padding-top: 68px !important; }
             #universal-alert-bar { position: fixed; top: 0; left: 0; width: 100%; height: 68px; background: #000; color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 7px 40px; box-sizing: border-box; z-index: 2147483647; font-family: Arial, sans-serif; }
             #universal-alert-bar .devpanel-logo { width: 150px; height: auto; }
             #universal-alert-bar .devpanel-logo img { object-fit: contain; width: 100%; }
@@ -36,7 +36,7 @@ if (!headers_sent() && php_sapi_name() !== 'cli') {
             
             <!-- Hiển thị thông tin vào div.devpanel-app-info theo đúng format bạn muốn -->
             <div class="devpanel-app-info">
-                App: <strong>' . htmlspecialchars($app_name) . '</strong> | SubmissionID: ' . htmlspecialchars($sub_id) . '
+                App: <strong>' . htmlspecialchars($app_name) . '</strong> | SubmissionID: ' . htmlspecialchars($sub_id) . ' | Email: ' . htmlspecialchars($email) . '
             </div>
             
             <a href="' . htmlspecialchars($buy_link) . '" class="buy-btn" target="_blank">Buy Now</a>
