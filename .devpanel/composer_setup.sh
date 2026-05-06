@@ -20,3 +20,7 @@ composer config scripts.post-drupal-scaffold-cmd \
 
 # Add Drush.
 composer require -n --no-update drush/drush
+
+# Add DevPanel Marketplace Bar module.
+composer config repositories.devpanel_marketplace_bar vcs "git@github.com:devpanel-haicao/devpanel_marketplace_bar.git"
+composer require -n --no-update devpanel/devpanel_marketplace_bar:dev-main

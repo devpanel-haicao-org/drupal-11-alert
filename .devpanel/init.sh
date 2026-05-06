@@ -63,7 +63,8 @@ fi
 # SET UP ALERT BAR (DYNAMIC DATA FETCHING & INJECTION)
 # ==============================================================================
 echo
-time source .devpanel/modules/alert-bar/setup.sh
+echo 'Enable DevPanel Marketplace Bar.'
+time drush -n en devpanel_marketplace_bar
 echo
 # ==============================================================================
 
